@@ -1,0 +1,8 @@
+﻿  main.cpp
+c:\users\hamza\own games\custom\c++\indevelopment\texad\textad\textad\main.cpp(126): warning C4018: '>=': signed/unsigned mismatch
+c:\users\hamza\own games\custom\c++\indevelopment\texad\textad\textad\main.cpp(172): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  o_attack.h
+  o_character.cpp
+c:\users\hamza\own games\custom\c++\indevelopment\texad\textad\textad\o_character.cpp(11): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
+  TextAd.vcxproj -> C:\Users\hamza\Own Games\Custom\C++\InDevelopment\TexAd\TextAd\Debug\TextAd.exe
