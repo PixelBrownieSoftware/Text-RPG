@@ -8,6 +8,8 @@
 #include <thread>
 #include <queue>
 #include <random>
+#include <conio.h>
+
 
 struct misc_turn 
 {
@@ -22,23 +24,83 @@ struct misc_turn
 };
 
 
-std::string choiceStr = "";
+char choiceStr = ' ';
 float oldtime = 0;
 double deltaTime = 0.000;
 std::list<o_character*> players;
 std::list<o_character*> enemies;
 std::list<o_character*> allchars;
+
+std::queue<o_character*> player_queue;	//all the players that are ready
+std::queue<o_character*> enemy_queue;	//all the enemies that are ready
+
 std::queue<o_character*> allQueue;
 std::queue<misc_turn> movequeue;
+char key;
 
 enum GAME_STATE {IDLE, PROCESSING, FINISH};
-GAME_STATE GAME_STATEMACHINE;
+enum KEY_STATE 
+{
+	KEY_NONE = -1,
+	KEY_UP = 72,
+	KEY_DOWN = 80,
+	KEY_LEFT = 75,
+	KEY_RIGHT = 77,
+	KEY_a = 97,
+	KEY_b,
+	KEY_c,
+	KEY_d,
+	KEY_e,
+	KEY_f,
+	KEY_A = 65,
+	KEY_B,
+	KEY_C,
+	KEY_D,
+	KEY_E,
+	KEY_F,
+};
 
+GAME_STATE GAME_STATEMACHINE;
+KEY_STATE KEYBOARD_STATE = KEY_NONE;
+
+std::string selected_character;
 o_character Player = o_character(15, "Hero", 2, 15);
+
+KEY_STATE GetKeyDown(char ke) 
+{
+	KEY_STATE stat = (KEY_STATE)ke;
+	return stat;
+}
+
+//For getting the key values
+char GetKey()
+{
+	if (_kbhit() != 0) 
+	{
+		char key = _getch();
+		return key;
+	}
+	return' ';
+}
+
+void PopQueue(bool isplayable)
+{
+	if (isplayable) 
+	{
+		player_queue.front()->SetAttackMode();
+		player_queue.front()->charge = 0;
+		player_queue.pop();
+	}
+	else 
+	{
+		enemy_queue.front()->SetAttackMode();
+		enemy_queue.front()->charge = 0;
+		enemy_queue.pop();
+	}
+}
 
 void DrawCharacter() 
 {
-	system("color 1a");
 	system("cls");
 	
 	for (o_character* p : players)
@@ -52,8 +114,20 @@ void DrawCharacter()
 	{
 		std::cout << p->name << "  " << p->health << " " << round(p->charge) << "%" << std::endl;
 	}
+	std::cout << selected_character << std::endl;
 
 }
+int ClampVal(int num, int min, int max) 
+{
+	if (num < min) 	
+		num = min;
+
+	if (num > max)
+		num = max;
+
+	return num;
+}
+
 
 void attack(misc_turn turndat)
 {
@@ -71,96 +145,116 @@ void PollEnemyEvents()
 	
 	std::advance(character, select);
 	o_character* charattk = *character;
-
-	o_attack* attk = (o_attack*)&allQueue.front()->attack;
+	o_attack* attk = (o_attack*)&enemy_queue.front()->attack;
 
 	misc_turn turn(attk, charattk);
-
 	movequeue.push(turn);
+	PopQueue(false);
 }
 
-void PollEvents()
+//This is for playable characters only.
+void Commands() 
 {
-	std::string n = "";
-	int choice = 0;
+	char n = ' ';
+	static int choice = 0;
 	bool isPlayable = true;
 	std::list<o_character*>::iterator it;
+
+	std::list<o_character*>::iterator character;
+	o_character* charattk;
+	o_attack* attk;
 
 	switch (GAME_STATEMACHINE)
 	{
 
 	case IDLE:
 
-		isPlayable = allQueue.front()->GetPlayable();
+		std::cout << player_queue.front()->name << "\n" << "F - fight, H - heal" << std::endl;
 
-		if (isPlayable)
+		choiceStr = key;
+		if (choiceStr == 'f' || choiceStr == 'h')
 		{
-			std::cout << allQueue.front()->name << "\n" << "F - fight, H - heal" << std::endl;
-			std::cin >> n;
+			GAME_STATEMACHINE = PROCESSING;
+		}
 
-			choiceStr = n;
-			if (choiceStr == "f" || choiceStr == "h")
-			{
-				GAME_STATEMACHINE = PROCESSING;
-			}
-		}
-		else 
-		{
-			PollEnemyEvents();
-			GAME_STATEMACHINE = FINISH;
-		}
-		
 
 		break;
 
 	case PROCESSING:
-		if (isPlayable)
+		if (choiceStr == 'f')
 		{
-			if (choiceStr == "f")
-			{
-				std::list<o_character*>::iterator character;
-				o_character* charattk;
-				o_attack* attk;
 
-				std::cin >> choice;
+			auto SelectCharacter = [&]()
+			{
+				character = enemies.begin();
+				std::advance(character, choice);
+				charattk = *character;
+				selected_character = charattk->name;
+			};
+			choice = ClampVal(choice, 0, enemies.size() - 1);
+			SelectCharacter();
+			
+			switch (KEYBOARD_STATE)
+			{
+				case KEY_UP:
+
+					choice++;
+					break;
+
+				case KEY_DOWN:
+
+					choice--;
+					break;
+
+				case KEY_f:
+
+					attk = (o_attack*)&player_queue.front()->attack;
+					misc_turn turn(attk, charattk);
+					movequeue.push(turn);
+					GAME_STATEMACHINE = FINISH;
+					break;
+			}
+
+		/*
+			while (key != 'f')
 				if (choice >= enemies.size())
 				{
 					return;
 				}
-				character = enemies.begin();
-				std::advance(character, choice);
-				charattk = *character;
-
-				attk = (o_attack*)&allQueue.front()->attack;
-
-				misc_turn turn(attk, charattk);
-
-				movequeue.push(turn);
-
 			}
-			if (choiceStr == "h")
-			{
-				//Set this to the character on the top of the command
-				allQueue.front()->health += 1;
-			}
+		*/
+
+
 		}
-		
+		if (choiceStr == 'h')
+		{
+			//Set this to the character on the top of the command
+			player_queue.front()->health += 1;
+			GAME_STATEMACHINE = FINISH;
+		}
+
 
 		//Reset their charge and pop them from the queue
 		//Set their is attacking mode to false
-		GAME_STATEMACHINE = FINISH;
 
 		break;
 
 	case FINISH:
 
-		allQueue.front()->SetAttackMode();
-		allQueue.front()->charge = 0;
-		allQueue.pop();
+		PopQueue(true);
 		GAME_STATEMACHINE = IDLE;
 		break;
 
 	}
+	//isPlayable = allQueue.front()->GetPlayable();
+}
+
+
+void PollEvents()
+{
+
+	PollEnemyEvents();
+	
 }
 
 void UpdateCharacters() 
@@ -180,7 +274,13 @@ void UpdateCharacters()
 			if (a->GetAttackMode() == false)
 			{
 				a->SetAttackMode();
-				allQueue.push(a);
+				if (a->GetPlayable() == true) 
+				{
+					player_queue.push(a);
+				} else
+				{
+					enemy_queue.push(a);
+				}
 			}
 		}
 	}
@@ -216,6 +316,47 @@ void AddToAllChars()
 	}
 }
 
+void GenerateRandom() 
+{
+
+}
+
+void UpdateGame() 
+{
+	clock_t ti;
+	ti = clock();
+
+	DrawCharacter();
+
+	UpdateCharacters();
+
+	key = GetKey();
+	KEYBOARD_STATE = GetKeyDown(key);
+
+	if (player_queue.size() > 0)
+		Commands();
+
+	if (enemy_queue.size() > 0)
+		PollEnemyEvents();
+
+	if (movequeue.size() > 0)
+		attack(movequeue.front());
+
+
+	clock_t t = clock() - ti;
+
+	deltaTime = t / (double)CLOCKS_PER_SEC;
+}
+
+void DebugKeyInputs() 
+{
+	if (key != ' ') 
+	{
+		//std::cout << "Hex value for " << key << " : " << (int)key << std::endl;
+		std::cout << (char)KEYBOARD_STATE << std::endl;
+	}
+}
+
 int main() 
 {
 	GAME_STATEMACHINE = IDLE;
@@ -237,30 +378,13 @@ int main()
 	AddToAllChars();
 	while (1) 
 	{
-		clock_t ti;
-		ti = clock();
 
-		DrawCharacter();
-		
-		UpdateCharacters();
+		//DebugKeyInputs();
 
-		if (allQueue.size() > 0) 
-		{
-			PollEvents();
-		}
+		UpdateGame();
 
-		if (movequeue.size() > 0) 
-		{
-			attack(movequeue.front());
-		}
-		
 		if (CheckIfSideDead())
 			break;
-
-		clock_t t = clock() - ti;
-
-		deltaTime = t / (double)CLOCKS_PER_SEC;
-
 	}
 
 	std::cout << "You won!" << std::endl;
