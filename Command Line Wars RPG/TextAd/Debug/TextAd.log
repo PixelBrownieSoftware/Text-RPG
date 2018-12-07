@@ -1,0 +1,4 @@
+﻿  main.cpp
+c:\users\hamza\own games\custom\c++\indevelopment\texad\textad\textad\main.cpp(282): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\hamza\own games\custom\c++\indevelopment\texad\textad\textad\main.cpp(492): warning C4724: potential mod by 0
+  TextAd.vcxproj -> C:\Users\hamza\Own Games\Custom\C++\InDevelopment\TexAd\TextAd\Debug\TextAd.exe

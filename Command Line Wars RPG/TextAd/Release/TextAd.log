@@ -1,0 +1,10 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Release\) contains files shared from another project (TextAd.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  main.cpp
+c:\users\hamza\own games\custom\c++\indevelopment\command line wars rpg\command line wars rpg\textad\main.cpp(282): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  o_attack.h
+  o_character.cpp
+c:\users\hamza\own games\custom\c++\indevelopment\command line wars rpg\command line wars rpg\textad\o_character.cpp(11): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+  Generating code
+  All 427 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  TextAd.vcxproj -> C:\Users\hamza\Own Games\Custom\C++\InDevelopment\Command Line Wars RPG\Command Line Wars RPG\Release\Command Line Wars RPG.exe
