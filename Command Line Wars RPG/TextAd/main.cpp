@@ -66,7 +66,8 @@ enum KEY_STATE
 };
 enum VICTORY_STATE { UNDECIDED, PLAYERS, ENEMIES};
 
-/*Credit to OLC's console game engine
+/*
+Credit to One Lone Coder's console game engine, for doing all the dirty work of figuring out the colours of the chars
 https://github.com/OneLoneCoder/videos/blob/master/olcConsoleGameEngine.h
 */
 enum COLOUR
@@ -504,19 +505,6 @@ int main()
 {
 	BSM = IDLE;
 	
-	/*
-	o_character e2(4, "Solider 76", 2,16);
-	enemies.push_back(&e2);
-	o_character e4(3, "Chie", 1, 8);
-	enemies.push_back(&e4);
-	o_character e5(5, "Spike",1, 3);
-	enemies.push_back(&e5);
-	o_character e6(2, "Alyx", 1,6);
-	enemies.push_back(&e6);
-	o_character e7(10, "Mahan", 2, 69);
-	enemies.push_back(&e7);
-	*/
-
 	std::cout << "Command Line Wars RPG" << std::endl;
 	Wait(1);
 	std::cout << "Created by Pixel Brownie Software (2018)" << std::endl;
